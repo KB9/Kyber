@@ -1,0 +1,11 @@
+# C object files
+*.o
+
+# Generated ISO images
+*.iso
+
+# Generated kernel files
+*.elf
+
+# OS serial output files
+*.out
