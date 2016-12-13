@@ -21,7 +21,7 @@ align 4                                         ; The code must be 4 byte aligne
     
 loader:                                         ; The loader label (defined as entry point in linker script)
     mov eax, 0xCAFEBABE                         ; Place the number 0xCAFEBABE in the register eax
-    ;mov esp, kernel_stack + KERNEL_STACK_SIZE
+    mov esp, kernel_stack + KERNEL_STACK_SIZE
     call kmain
 .loop:
     jmp .loop                                   ; Loop forever

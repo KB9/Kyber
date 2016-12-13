@@ -7,7 +7,7 @@
  *  @param port The I/O port to send the data to
  *  @param data The data to send to the I/O port
  */
-extern void outb(unsigned short port, unsigned char data);
+extern "C" void outb(unsigned short port, unsigned char data);
 
 /** inb:
  *  Read a byte from an I/O port.
@@ -15,6 +15,6 @@ extern void outb(unsigned short port, unsigned char data);
  *  @param port The address of the I/O port
  *  @return     The read byte
  */
-extern unsigned char inb(unsigned short port);
+extern "C" unsigned char inb(unsigned short port);
 
 #endif

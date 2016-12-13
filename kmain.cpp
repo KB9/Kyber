@@ -1,4 +1,5 @@
-#include "io.h"
+#include "io.hpp"
+#include "gdt.hpp"
 
 #define VIDEO_MEMORY 0x000B8000
 #define FB_GREEN 2
@@ -80,7 +81,7 @@ void fb_write(char *buffer, unsigned int length)
  *  @param com		The COM port to configure
  *  @param divisor  The divisor
  */
-void serial_configure_baud_rate(unsigned short com, unsigned short divisor)
+/*extern "C" */void serial_configure_baud_rate(unsigned short com, unsigned short divisor)
 {
 	outb(SERIAL_LINE_COMMAND_PORT(com),
 		 SERIAL_LINE_ENABLE_DLAB);
@@ -166,14 +167,16 @@ void serial_write(char *buffer, unsigned int length)
 	}
 }
 
-void kmain()
+extern "C" void kmain()
 {
-    char *text = "Kavan's OS wrote this line!";
-    fb_write(text, 28);
+	GlobalDescriptorTable gdt;
+	
+    char text[] = "Kyber OS";
+    fb_write(text, 9);
     
     serial_configure_baud_rate(SERIAL_COM1_BASE, 2);
     serial_configure_line(SERIAL_COM1_BASE);
     serial_configure_buffers(SERIAL_COM1_BASE);
     serial_configure_modem(SERIAL_COM1_BASE);
-    serial_write(text, 28);
+    serial_write(text, 9);
 }
