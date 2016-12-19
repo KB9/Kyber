@@ -1,5 +1,6 @@
-#include "io.hpp"
 #include "gdt.hpp"
+#include "port.hpp"
+#include "interrupts.hpp"
 
 #define VIDEO_MEMORY 0x000B8000
 #define FB_GREEN 2
@@ -15,11 +16,36 @@
  *  @param bg The background color
  */
 void fb_write_cell(unsigned int i, char c, unsigned char fg, unsigned char bg)
-{   
+{
     char *fb = (char *)VIDEO_MEMORY;
     
     fb[(i*2)] = c;
     fb[(i*2) + 1] = ((fg & 0x0F) << 4) | (bg & 0x0F);
+}
+
+void kprint(char *text)
+{
+	static unsigned int line = 0;
+	
+	unsigned int char_count = 0;
+	while (*text != '\0')
+	{
+		if (char_count >= 80)
+		{
+			char_count = 0;
+			line++;
+		}
+		
+		unsigned int index = (line * 80) + char_count;
+		fb_write_cell(index, *text, 0x00, 0xFF);
+		
+		// Update the pointer and character count
+		text++;
+		char_count++;
+	}
+	
+	// Advance the line index for the next print call
+	line++;
 }
 
 #define FB_COMMAND_PORT 0x3D4
@@ -33,6 +59,7 @@ void fb_write_cell(unsigned int i, char c, unsigned char fg, unsigned char bg)
  *
  *  @param pos The new position of the cursor
  */
+/*
 void fb_move_cursor(unsigned short pos)
 {
     outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
@@ -49,6 +76,7 @@ void fb_write(char *buffer, unsigned int length)
 		fb_move_cursor(i);
 	}
 }
+*/
 
 /* The I/O ports */
 
@@ -81,7 +109,8 @@ void fb_write(char *buffer, unsigned int length)
  *  @param com		The COM port to configure
  *  @param divisor  The divisor
  */
-/*extern "C" */void serial_configure_baud_rate(unsigned short com, unsigned short divisor)
+/*
+void serial_configure_baud_rate(unsigned short com, unsigned short divisor)
 {
 	outb(SERIAL_LINE_COMMAND_PORT(com),
 		 SERIAL_LINE_ENABLE_DLAB);
@@ -90,6 +119,7 @@ void fb_write(char *buffer, unsigned int length)
 	outb(SERIAL_DATA_PORT(com),
 		 divisor & 0x00FF);
 }
+*/
 
 /** serial_configure_line:
  *  Configures the line of the given serial port. The port is set to have a data
@@ -97,14 +127,17 @@ void fb_write(char *buffer, unsigned int length)
  *
  *  @param com	The serial port to configure
  */
+/*
 void serial_configure_line(unsigned short com)
-{
+{*/
 	/* Bit:		| 7 | 6 | 5 4 3 | 2 | 1 0 |
 	 * Content:	| d | b |  prty | s |  dl |
 	 * Value:	| 0 | 0 | 0 0 0 | 0 | 1 1 | = 0x03
 	 */
+	 /*
 	outb(SERIAL_LINE_COMMAND_PORT(com), 0x03);
 }
+*/
 
 // NOTE: I ADDED THE BELOW METHOD MYSELF (NEEDS TESTED)
 /** serial_configure_buffers:
@@ -115,14 +148,16 @@ void serial_configure_line(unsigned short com)
  *
  *  @param com	The serial port to configure
  */
+/*
 void serial_configure_buffers(unsigned short com)
-{
+{*/
 	/* Bit:		| 7 6 | 5  | 4 | 3   | 2   | 1   | 0 |
 	 * Content: | lvl | bs | r | dma | clt | clr | e |
 	 * Value:	| 1 1 | 0  | 0 | 0   | 1   | 1   | 1 | = 0xC7
 	 */
+	 /*
 	outb(SERIAL_FIFO_COMMAND_PORT(com), 0xC7);
-}
+}*/
 
 // NOTE: I ADDED THE BELOW METHOD MYSELF (NEEDS TESTED)
 /** serial_configure_modem:
@@ -133,15 +168,18 @@ void serial_configure_buffers(unsigned short com)
  *
  *  @param com	The serial port to configure
  */
+/*
 void serial_configure_modem(unsigned short com)
-{
+{*/
 	/* Bit:		| 7 | 6 | 5  | 4  | 3   | 2   | 1   | 0   |
 	 * Content:	| r | r | af | lb | ao2 | ao1 | rts | dtr |
 	 * Value:	| 0 | 0 | 0  | 0  | 0   | 0   | 1   | 1   | = 0x03
 	 * (RTS = 1 and DTS = 1)
 	 */
+	 /*
 	 outb(SERIAL_MODEM_COMMAND_PORT(com), 0x03);
 }
+*/
 
 /** serial_is_transmit_fifo_empty:
  *  Checks whether the transmit FIFO queue is empty or not for the given COM
@@ -151,9 +189,11 @@ void serial_configure_modem(unsigned short com)
  *  @return 0 if the transmit FIFO queue is not empty
  *			1 if the transmit FIFO queue is empty
  */
+/*
 int serial_is_transmit_fifo_empty(unsigned int com)
-{
+{*/
 	/* 0x20 = 0010 0000 */
+	/*
 	return inb(SERIAL_LINE_STATUS_PORT(com)) & 0x20;
 }
 
@@ -166,11 +206,19 @@ void serial_write(char *buffer, unsigned int length)
 		outb(SERIAL_COM1_BASE, buffer[i]);
 	}
 }
+*/
 
 extern "C" void kmain()
 {
 	GlobalDescriptorTable gdt;
+	InterruptManager interrupts(&gdt);
 	
+	interrupts.activate();
+	
+	//char text[] = "Kyber OS";
+	//kprint(text);
+	
+	/*
     char text[] = "Kyber OS";
     fb_write(text, 9);
     
@@ -179,4 +227,5 @@ extern "C" void kmain()
     serial_configure_buffers(SERIAL_COM1_BASE);
     serial_configure_modem(SERIAL_COM1_BASE);
     serial_write(text, 9);
+    */
 }
